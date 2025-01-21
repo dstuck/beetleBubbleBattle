@@ -4,9 +4,6 @@ using UnityEngine.InputSystem;
 public class BeetleBubble : MonoBehaviour
 {
     #region Serialized Fields
-    [Header("Input Properties")]
-    [SerializeField] private InputActionAsset m_InputActions;
-    
     [Header("Movement Properties")]
     [SerializeField, Range(0.1f, 10f)] private float m_BaseWeight = 1f;
     [SerializeField, Range(1f, 10f)] private float m_BopForce = 2f;
@@ -15,12 +12,14 @@ public class BeetleBubble : MonoBehaviour
     
     [Header("Size Properties")]
     [SerializeField] private float m_MinSize = 0.5f;
-    [SerializeField] private float m_MaxSize = 5f;  // Increased max size for more dramatic effect
-    [SerializeField] private float m_ChargeGrowthRate = 0.5f;  // Fast growth while charging
-    [SerializeField] private float m_DischargeShrinkRate = 0.1f;  // Smaller decrease when bursting
+    [SerializeField] private float m_MaxSize = 5f;
+    [SerializeField] private float m_ChargeGrowthRate = 0.5f;
+    [SerializeField] private float m_DischargeShrinkRate = 0.1f;
     
     [Header("Visual Properties")]
     [SerializeField, Range(0.2f, 1f)] private float m_ChargeTransparency = 0.5f;
+
+    [SerializeField] private float m_BounceForce = 1f;  // Multiplier for bounce force
     #endregion
 
     #region Private Fields
@@ -32,12 +31,13 @@ public class BeetleBubble : MonoBehaviour
     private bool m_IsCharging;
     private float m_CurrentSize = 1f;
     private Color m_OriginalColor;
+    private Vector3 m_StartPosition;
     #endregion
 
     #region Unity Lifecycle
     private void Awake()
     {
-        Debug.Log("BeetleBubble: Awake");
+        Debug.Log($"BeetleBubble: Awake for Player {GetComponent<PlayerInput>()?.playerIndex ?? -1}");
         m_Rigidbody = GetComponent<Rigidbody2D>();
         m_SpriteRenderer = GetComponent<SpriteRenderer>();
         
@@ -51,65 +51,13 @@ public class BeetleBubble : MonoBehaviour
         m_Rigidbody.mass = m_BaseWeight;
         m_Rigidbody.linearDamping = m_BaseDamping;
         m_Rigidbody.gravityScale = 0f;
-        
-        // Enable the input actions
-        var playerInput = gameObject.AddComponent<PlayerInput>();
-        playerInput.actions = m_InputActions;
-        playerInput.defaultActionMap = "Player";  // Use the "Player" action map
-        playerInput.notificationBehavior = PlayerNotifications.InvokeUnityEvents;
-        
-        Debug.Log($"BeetleBubble: Input Actions loaded: {playerInput.actions != null}");
-        
-        // Debug available actions
-        if (playerInput.actions != null)
-        {
-            foreach (var actionMap in playerInput.actions.actionMaps)
-            {
-                Debug.Log($"Action Map: {actionMap.name}");
-                foreach (var action in actionMap.actions)
-                {
-                    Debug.Log($"  Action: {action.name}");
-                }
-            }
-        }
+        m_StartPosition = transform.position;
 
-        // Enable action map and subscribe to events
-        var playerMap = playerInput.actions.FindActionMap("Player");
-        playerMap.Enable();
-        
-        var chargeAction = playerMap.FindAction("Charge");
-        var moveAction = playerMap.FindAction("Move");
-        
-        chargeAction.performed += ctx => OnCharge(ctx);
-        chargeAction.canceled += ctx => OnCharge(ctx);
-        moveAction.performed += ctx => OnMove(ctx);
-        moveAction.canceled += ctx => OnMove(ctx);
-    }
-
-    private void OnDestroy()
-    {
-        // Clean up subscriptions if the object is destroyed
-        if (m_InputActions != null)
+        // Configure physics for bouncing
+        if (m_Rigidbody != null)
         {
-            var playerMap = m_InputActions.FindActionMap("Player");
-            if (playerMap != null)
-            {
-                playerMap.Disable();
-                var chargeAction = playerMap.FindAction("Charge");
-                var moveAction = playerMap.FindAction("Move");
-                
-                if (chargeAction != null)
-                {
-                    chargeAction.performed -= ctx => OnCharge(ctx);
-                    chargeAction.canceled -= ctx => OnCharge(ctx);
-                }
-                
-                if (moveAction != null)
-                {
-                    moveAction.performed -= ctx => OnMove(ctx);
-                    moveAction.canceled -= ctx => OnMove(ctx);
-                }
-            }
+            m_Rigidbody.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+            m_Rigidbody.sharedMaterial = CreateBouncyMaterial();
         }
     }
 
@@ -119,41 +67,30 @@ public class BeetleBubble : MonoBehaviour
         {
             Charge();
         }
-        
-        // Update damping based on size
         UpdateDamping();
     }
     #endregion
 
-    #region Input Handling
-    public void OnMove(InputAction.CallbackContext _context)
+    #region Input Event Handlers
+    public void OnMove(UnityEngine.InputSystem.InputAction.CallbackContext context)
     {
-        m_MoveDirection = _context.ReadValue<Vector2>();
-        
-        // Store last valid direction
+        m_MoveDirection = context.ReadValue<Vector2>();
         if (m_MoveDirection != Vector2.zero)
         {
             m_LastValidMoveDirection = m_MoveDirection.normalized;
         }
-        
-        Debug.Log($"BeetleBubble: Move input received: {m_MoveDirection}");
     }
 
-    public void OnCharge(InputAction.CallbackContext _context)
+    public void OnCharge(UnityEngine.InputSystem.InputAction.CallbackContext context)
     {
-        m_IsCharging = _context.performed;
-        Debug.Log($"BeetleBubble: Charge input received: {m_IsCharging}");
+        bool isPressed = context.ReadValueAsButton();
+        m_IsCharging = isPressed;
         
-        if (!m_IsCharging && m_CurrentCharge > 0)
+        if (!isPressed && m_CurrentCharge > 0)
         {
             ApplyBurst();
         }
-        
-        // Reset transparency when not charging
-        if (!m_IsCharging)
-        {
-            UpdateVisuals(1f);
-        }
+        UpdateVisuals(isPressed ? m_ChargeTransparency : 1f);
     }
     #endregion
 
@@ -172,9 +109,7 @@ public class BeetleBubble : MonoBehaviour
         // Update transparency while charging
         float chargePercent = m_CurrentSize / m_MaxSize;
         float transparency = Mathf.Lerp(m_ChargeTransparency, 1f, chargePercent);
-        UpdateVisuals(transparency);
-        
-        Debug.Log($"BeetleBubble: Charging - Size: {m_CurrentSize:F2}, Charge: {m_CurrentCharge:F2}");
+        UpdateVisuals(transparency);        
     }
 
     private void UpdateDamping()
@@ -217,6 +152,38 @@ public class BeetleBubble : MonoBehaviour
             newColor.a = _alpha;
             m_SpriteRenderer.color = newColor;
         }
+    }
+
+    public void Pop()
+    {
+        // TODO: Add pop effect, particles, sound
+        Respawn();
+    }
+
+    private void Respawn()
+    {
+        // Reset position
+        transform.position = m_StartPosition;
+        
+        // Reset physics
+        m_Rigidbody.linearVelocity = Vector2.zero;
+        m_Rigidbody.angularVelocity = 0f;
+        
+        // Reset size and visuals
+        m_CurrentSize = 1f;
+        m_CurrentCharge = 0f;
+        transform.localScale = Vector3.one;
+        UpdateVisuals(1f);
+    }
+
+    private PhysicsMaterial2D CreateBouncyMaterial()
+    {
+        var material = new PhysicsMaterial2D("BubbleBounce")
+        {
+            friction = 0f,
+            bounciness = 1f
+        };
+        return material;
     }
     #endregion
 } 

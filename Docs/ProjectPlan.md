@@ -1,16 +1,16 @@
 # Project Plan
 
 v0.1 character movement
-- [ ] Control scheme
-- [ ] Charging burst
-- [ ] Tapping bops
-- [ ] Size change
+- [x] Control scheme
+- [x] Charging burst
+- [x] Tapping bops
+- [x] Size change
 v0.2 environment 
-- [ ] Bounce off walls
-- [ ] Pop on pillar
-- [ ] Bounce into other bubble
+- [x] Bounce off walls
+- [x] Pop on spikes
+- [x] Bounce into other bubble
 v0.3 multiplayer
-- [ ] Other players can spawn in by pressing start
+- [x] Other players can spawn in by pressing start
 - [ ] Player 2 starts out as a bot that just does basic movement and doesn’t die
 v0.4 Items
 - [ ] Create item blocks
