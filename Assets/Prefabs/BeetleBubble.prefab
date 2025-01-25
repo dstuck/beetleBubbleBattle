@@ -237,7 +237,7 @@ MonoBehaviour:
       m_Calls: []
     m_ActionId: 63aa4ec2-0802-4a45-b268-760e1c4640b3
     m_ActionName: UI/New action
-  m_NeverAutoSwitchControlSchemes: 0
+  m_NeverAutoSwitchControlSchemes: 1
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
   m_SplitScreenIndex: -1
