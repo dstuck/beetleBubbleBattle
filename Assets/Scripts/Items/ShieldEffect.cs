@@ -19,6 +19,9 @@ public class ShieldEffect : ItemEffect
             return;
         }
 
+        // Set shield state
+        m_TargetBeetle.IsShielded = true;
+
         // Find the bubble's SpriteRenderer
         m_BubbleRenderer = m_TargetBeetle.GetComponentInChildren<Transform>().Find("Bubble").GetComponent<SpriteRenderer>();
         if (m_BubbleRenderer == null)
@@ -44,6 +47,12 @@ public class ShieldEffect : ItemEffect
 
     protected override void OnEffectEnd()
     {
+        // Remove shield state
+        if (m_TargetBeetle != null)
+        {
+            m_TargetBeetle.IsShielded = false;
+        }
+
         if (m_ShieldVisual != null)
         {
             Destroy(m_ShieldVisual);

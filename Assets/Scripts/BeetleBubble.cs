@@ -205,19 +205,29 @@ public class BeetleBubble : MonoBehaviour
 
     private PhysicsMaterial2D CreateBouncyMaterial()
     {
-        var material = new PhysicsMaterial2D("BubbleBounce")
+        var material = new PhysicsMaterial2D("BeetleBounce")
         {
             friction = 0f,
-            bounciness = 1f
+            bounciness = 0.2f
         };
         return material;
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (m_IsShielded) return; // Ignore collisions when shielded
-        
-        // Handle other collision logic here
+        if (m_IsShielded) return;
+
+        // Check if we hit another beetle
+        if (collision.gameObject.TryGetComponent<BeetleBubble>(out var otherBeetle))
+        {
+            // Calculate bounce force based on both beetles' sizes
+            float combinedSize = m_CurrentSize + otherBeetle.m_CurrentSize;
+            Vector2 bounceDirection = (transform.position - collision.transform.position).normalized;
+            float bounceForce = m_BounceForce * combinedSize;
+            
+            // Apply bounce force
+            m_Rigidbody.AddForce(bounceDirection * bounceForce, ForceMode2D.Impulse);
+        }
     }
 
     private void UpdateSize(float _newSize)

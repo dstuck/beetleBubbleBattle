@@ -24,8 +24,7 @@ public class PowerChargeEffect : ItemEffect
         // Store original charge rate
         m_OriginalChargeRate = m_TargetBeetle.ChargeRate;
         m_TargetBeetle.ChargeRate *= c_ChargeMultiplier;
-        Debug.Log($"PowerChargeEffect: Charge rate boosted from {m_OriginalChargeRate} to {m_TargetBeetle.ChargeRate}");
-
+        
         // Create particle system
         var particleObj = new GameObject("PowerParticles");
         particleObj.transform.SetParent(m_TargetBeetle.transform, false);
@@ -33,9 +32,14 @@ public class PowerChargeEffect : ItemEffect
         
         m_PowerParticles = particleObj.AddComponent<ParticleSystem>();
         var particleRenderer = m_PowerParticles.GetComponent<ParticleSystemRenderer>();
-        particleRenderer.material = new Material(Shader.Find("Sprites/Default"));
+        particleRenderer.material = Resources.GetBuiltinResource<Material>("Sprite-Default.mat");
         
-        // Configure all particle system properties
+        ConfigureParticleSystem();
+        m_PowerParticles.Play();
+    }
+
+    private void ConfigureParticleSystem()
+    {
         var main = m_PowerParticles.main;
         main.playOnAwake = false;
         main.loop = true;
@@ -66,9 +70,6 @@ public class PowerChargeEffect : ItemEffect
             }
         );
         colorOverLifetime.color = gradient;
-
-        // Start the system
-        m_PowerParticles.Play();
     }
 
     protected override void OnEffectEnd()
