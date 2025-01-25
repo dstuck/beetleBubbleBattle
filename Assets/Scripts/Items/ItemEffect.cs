@@ -3,7 +3,7 @@ using System.Collections;
 
 public abstract class ItemEffect : MonoBehaviour
 {
-    [SerializeField] protected float m_Duration = 5f;
+    [SerializeField] protected float m_Duration = 7f;
     protected BeetleBubble m_TargetBeetle;
     
     public virtual void Initialize(BeetleBubble _targetBeetle)

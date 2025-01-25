@@ -91,6 +91,10 @@ public class BeetleBubble : MonoBehaviour
         if (m_MoveDirection != Vector2.zero)
         {
             m_LastValidMoveDirection = m_MoveDirection.normalized;
+            
+            // Calculate rotation based on movement direction, offset by -90 to account for initial upward orientation
+            float angle = Mathf.Atan2(m_MoveDirection.y, m_MoveDirection.x) * Mathf.Rad2Deg - 90f;
+            transform.rotation = Quaternion.Euler(0, 0, angle);
         }
     }
 

@@ -80,7 +80,7 @@ MonoBehaviour:
   m_ChargeRate: 14.5
   m_BaseDamping: 2.97
   m_MinSize: 0.5
-  m_MaxSize: 5
+  m_MaxSize: 2.5
   m_ChargeGrowthRate: 0.8
   m_DischargeShrinkRate: 0.2
   m_ChargeTransparency: 0.5
