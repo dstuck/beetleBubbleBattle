@@ -253,5 +253,54 @@ public class BeetleBubble : MonoBehaviour
             m_BubbleTransform.localScale = Vector3.one * m_CurrentSize;
         }
     }
+
+    public void ResetState()
+    {
+        // Re-enable visuals and physics
+        foreach (Transform child in transform)
+        {
+            child.gameObject.SetActive(true);
+        }
+        
+        if (m_Rigidbody != null)
+        {
+            m_Rigidbody.simulated = true;
+            m_Rigidbody.linearVelocity = Vector2.zero;
+            m_Rigidbody.angularVelocity = 0f;
+        }
+        
+        // Reset size and visuals
+        m_CurrentSize = 1f;
+        m_CurrentCharge = 0f;
+        UpdateSize(m_CurrentSize);
+        UpdateVisuals(1f);
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("DeathZone"))
+        {
+            GameManager.Instance.RespawnPlayer(GetComponent<PlayerInput>());
+        }
+    }
+
+    public void OnHitSpike()
+    {
+        if (IsShielded) return;
+
+        // Disable visuals and physics
+        foreach (Transform child in transform)
+        {
+            child.gameObject.SetActive(false);
+        }
+        
+        if (m_Rigidbody != null)
+        {
+            m_Rigidbody.simulated = false;
+        }
+
+        // Request respawn from GameManager
+        GameManager.Instance.RespawnPlayer(GetComponent<PlayerInput>());
+    }
     #endregion
 } 
