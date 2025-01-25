@@ -18,22 +18,19 @@ public class BeetleBubble : MonoBehaviour
     
     [Header("Visual Properties")]
     [SerializeField, Range(0.2f, 1f)] private float m_ChargeTransparency = 0.5f;
+    [SerializeField] private float m_BounceForce = 1f;
 
-    [SerializeField] private float m_BounceForce = 1f;  // Multiplier for bounce force
-
-    [Header("Visual Settings")]
-    [SerializeField] private BugVisualController m_BugVisual;
+    [Header("References")]
+    [SerializeField] private Transform m_BubbleTransform;
     #endregion
 
     #region Private Fields
     private Rigidbody2D m_Rigidbody;
-    private SpriteRenderer m_SpriteRenderer;
     private Vector2 m_MoveDirection;
     private Vector2 m_LastValidMoveDirection = Vector2.right;
     private float m_CurrentCharge;
     private bool m_IsCharging;
     private float m_CurrentSize = 1f;
-    private Color m_BaseColor = Color.white;  // Base bubble color is white
     private Vector3 m_StartPosition;
     private bool m_IsShielded;
     #endregion
@@ -57,11 +54,10 @@ public class BeetleBubble : MonoBehaviour
     {
         Debug.Log($"BeetleBubble: Awake for Player {GetComponent<PlayerInput>()?.playerIndex ?? -1}");
         m_Rigidbody = GetComponent<Rigidbody2D>();
-        m_SpriteRenderer = GetComponent<SpriteRenderer>();
         
-        if (m_SpriteRenderer == null)
+        if (m_Rigidbody == null)
         {
-            Debug.LogError("BeetleBubble: No SpriteRenderer found!");
+            Debug.LogError("BeetleBubble: No Rigidbody2D found!");
             return;
         }
         
@@ -118,7 +114,7 @@ public class BeetleBubble : MonoBehaviour
         
         // Increase size while charging
         m_CurrentSize = Mathf.Min(m_CurrentSize + m_ChargeGrowthRate * Time.deltaTime, m_MaxSize);
-        transform.localScale = Vector3.one * m_CurrentSize;
+        UpdateSize(m_CurrentSize);
         
         // Update mass based on size
         m_Rigidbody.mass = m_BaseWeight * m_CurrentSize;
@@ -154,7 +150,7 @@ public class BeetleBubble : MonoBehaviour
         
         // Decrease size after burst with smaller rate
         m_CurrentSize = Mathf.Max(m_CurrentSize - m_DischargeShrinkRate, m_MinSize);
-        transform.localScale = Vector3.one * m_CurrentSize;
+        UpdateSize(m_CurrentSize);
         
         // Reset charge
         m_CurrentCharge = 0f;
@@ -162,25 +158,22 @@ public class BeetleBubble : MonoBehaviour
     
     private void UpdateVisuals(float _chargePercent)
     {
-        // Update bubble transparency
-        if (m_SpriteRenderer != null)
+        if (m_BubbleTransform != null && m_BubbleTransform.TryGetComponent<SpriteRenderer>(out var bubbleRenderer))
         {
-            Color bubbleColor = m_BaseColor;
+            Color color = bubbleRenderer.color;
             
-            // Apply charge effect (only modify alpha)
             if (_chargePercent > 0)
             {
-                bubbleColor.a = Mathf.Lerp(1f, m_ChargeTransparency, _chargePercent);
+                color.a = Mathf.Lerp(1f, m_ChargeTransparency, _chargePercent);
             }
             
-            // Apply shield effect on top if active
             if (m_IsShielded)
             {
                 Color shieldTint = new Color(0, 0.7f, 1f, 0.5f);
-                bubbleColor = Color.Lerp(bubbleColor, shieldTint, 0.5f);
+                color = Color.Lerp(color, shieldTint, 0.5f);
             }
 
-            m_SpriteRenderer.color = bubbleColor;
+            bubbleRenderer.color = color;
         }
     }
 
@@ -202,7 +195,7 @@ public class BeetleBubble : MonoBehaviour
         // Reset size and visuals
         m_CurrentSize = 1f;
         m_CurrentCharge = 0f;
-        transform.localScale = Vector3.one;
+        UpdateSize(m_CurrentSize);
         UpdateVisuals(1f);
     }
 
@@ -226,11 +219,10 @@ public class BeetleBubble : MonoBehaviour
     private void UpdateSize(float _newSize)
     {
         m_CurrentSize = _newSize;
-        transform.localScale = Vector3.one * m_CurrentSize;
-
-        if (m_BugVisual != null)
+        // Scale the bubble
+        if (m_BubbleTransform != null)
         {
-            m_BugVisual.UpdateScale(m_CurrentSize);
+            m_BubbleTransform.localScale = Vector3.one * m_CurrentSize;
         }
     }
     #endregion

@@ -55,7 +55,9 @@ public class ItemPickup : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.TryGetComponent<BeetleBubble>(out var player))
+        // Get the parent BeetleBubble component
+        var player = other.GetComponentInParent<BeetleBubble>();
+        if (player != null)
         {
             Debug.Log($"Player {player.GetComponent<PlayerInput>()?.playerIndex ?? -1} picked up {m_ItemType}");
             
