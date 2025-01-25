@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections;
 
 public class BeetleBubble : MonoBehaviour
 {
@@ -22,6 +23,11 @@ public class BeetleBubble : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private Transform m_BubbleTransform;
+
+    [Header("Death Properties")]
+    [SerializeField] private float m_RespawnDelay = 1f;
+    private bool m_IsDead = false;
+
     #endregion
 
     #region Private Fields
@@ -286,7 +292,8 @@ public class BeetleBubble : MonoBehaviour
 
     public void OnHitSpike()
     {
-        if (IsShielded) return;
+        if (IsShielded || m_IsDead) return;
+        m_IsDead = true;
 
         // Disable visuals and physics
         foreach (Transform child in transform)
@@ -299,8 +306,17 @@ public class BeetleBubble : MonoBehaviour
             m_Rigidbody.simulated = false;
         }
 
+        // Start respawn sequence
+        StartCoroutine(RespawnSequence());
+    }
+
+    private System.Collections.IEnumerator RespawnSequence()
+    {
+        yield return new WaitForSeconds(m_RespawnDelay);
+        
         // Request respawn from GameManager
         GameManager.Instance.RespawnPlayer(GetComponent<PlayerInput>());
+        m_IsDead = false;
     }
     #endregion
 } 
