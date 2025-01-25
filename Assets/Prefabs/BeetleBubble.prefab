@@ -33,7 +33,8 @@ Transform:
   m_LocalPosition: {x: -2.97, y: 0.36, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 4131896834145522770}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &5575279470760118152
@@ -176,8 +177,7 @@ MonoBehaviour:
   m_DischargeShrinkRate: 0.2
   m_ChargeTransparency: 0.5
   m_BounceForce: 1
-  m_BugRenderer: {fileID: 0}
-  m_BugSprite: {fileID: 8420224660069180320, guid: bde351e0903f04568a4fa5607fabf7c6, type: 3}
+  m_BugVisual: {fileID: 2302698185308762263}
 --- !u!114 &5609207401581149661
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -244,3 +244,50 @@ MonoBehaviour:
   m_DefaultActionMap: Player
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
+--- !u!1 &5787586420766274237
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4131896834145522770}
+  - component: {fileID: 2302698185308762263}
+  m_Layer: 0
+  m_Name: BugSprite
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4131896834145522770
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5787586420766274237}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3254814729587177301}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2302698185308762263
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5787586420766274237}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc0166a6b16e145ee8dcf581bd78840f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_BugRenderer: {fileID: 0}
+  m_BugSprite: {fileID: 8420224660069180320, guid: bde351e0903f04568a4fa5607fabf7c6, type: 3}
+  m_BaseScale: 2.5

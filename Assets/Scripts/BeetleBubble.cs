@@ -22,8 +22,7 @@ public class BeetleBubble : MonoBehaviour
     [SerializeField] private float m_BounceForce = 1f;  // Multiplier for bounce force
 
     [Header("Visual Settings")]
-    [SerializeField] private SpriteRenderer m_BugRenderer;  // Reference to child sprite renderer
-    [SerializeField] private Sprite m_BugSprite;  // Reference to chosen bug sprite
+    [SerializeField] private BugVisualController m_BugVisual;
     #endregion
 
     #region Private Fields
@@ -76,23 +75,6 @@ public class BeetleBubble : MonoBehaviour
         {
             m_Rigidbody.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
             m_Rigidbody.sharedMaterial = CreateBouncyMaterial();
-        }
-
-        // Setup bug sprite
-        if (m_BugRenderer == null)
-        {
-            // Create child object for bug sprite if not set
-            GameObject bugObject = new GameObject("BugSprite");
-            bugObject.transform.parent = transform;
-            bugObject.transform.localPosition = Vector3.zero;
-            bugObject.transform.localScale = Vector3.one * 3f; // Make bug 3x larger
-            m_BugRenderer = bugObject.AddComponent<SpriteRenderer>();
-            m_BugRenderer.sortingOrder = m_SpriteRenderer.sortingOrder + 1;  // Render above bubble
-        }
-
-        if (m_BugSprite != null)
-        {
-            m_BugRenderer.sprite = m_BugSprite;
         }
     }
 
@@ -180,7 +162,7 @@ public class BeetleBubble : MonoBehaviour
     
     private void UpdateVisuals(float _chargePercent)
     {
-        // Update bubble transparency only
+        // Update bubble transparency
         if (m_SpriteRenderer != null)
         {
             Color bubbleColor = m_BaseColor;
@@ -239,6 +221,17 @@ public class BeetleBubble : MonoBehaviour
         if (m_IsShielded) return; // Ignore collisions when shielded
         
         // Handle other collision logic here
+    }
+
+    private void UpdateSize(float _newSize)
+    {
+        m_CurrentSize = _newSize;
+        transform.localScale = Vector3.one * m_CurrentSize;
+
+        if (m_BugVisual != null)
+        {
+            m_BugVisual.UpdateScale(m_CurrentSize);
+        }
     }
     #endregion
 } 
