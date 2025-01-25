@@ -20,6 +20,10 @@ public class BeetleBubble : MonoBehaviour
     [SerializeField, Range(0.2f, 1f)] private float m_ChargeTransparency = 0.5f;
 
     [SerializeField] private float m_BounceForce = 1f;  // Multiplier for bounce force
+
+    [Header("Visual Settings")]
+    [SerializeField] private SpriteRenderer m_BugRenderer;  // Reference to child sprite renderer
+    [SerializeField] private Sprite m_BugSprite;  // Reference to chosen bug sprite
     #endregion
 
     #region Private Fields
@@ -30,7 +34,7 @@ public class BeetleBubble : MonoBehaviour
     private float m_CurrentCharge;
     private bool m_IsCharging;
     private float m_CurrentSize = 1f;
-    private Color m_BaseColor = Color.white;  // Base color is white
+    private Color m_BaseColor = Color.white;  // Base bubble color is white
     private Vector3 m_StartPosition;
     private bool m_IsShielded;
     #endregion
@@ -72,6 +76,23 @@ public class BeetleBubble : MonoBehaviour
         {
             m_Rigidbody.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
             m_Rigidbody.sharedMaterial = CreateBouncyMaterial();
+        }
+
+        // Setup bug sprite
+        if (m_BugRenderer == null)
+        {
+            // Create child object for bug sprite if not set
+            GameObject bugObject = new GameObject("BugSprite");
+            bugObject.transform.parent = transform;
+            bugObject.transform.localPosition = Vector3.zero;
+            bugObject.transform.localScale = Vector3.one * 3f; // Make bug 3x larger
+            m_BugRenderer = bugObject.AddComponent<SpriteRenderer>();
+            m_BugRenderer.sortingOrder = m_SpriteRenderer.sortingOrder + 1;  // Render above bubble
+        }
+
+        if (m_BugSprite != null)
+        {
+            m_BugRenderer.sprite = m_BugSprite;
         }
     }
 
@@ -159,25 +180,25 @@ public class BeetleBubble : MonoBehaviour
     
     private void UpdateVisuals(float _chargePercent)
     {
-        Color targetColor = m_BaseColor;
-        
-        // Apply charge effect (only modify alpha)
-        if (_chargePercent > 0)
-        {
-            targetColor.a = Mathf.Lerp(1f, m_ChargeTransparency, _chargePercent);
-        }
-        
-        // Apply shield effect on top if active
-        if (m_IsShielded)
-        {
-            Color shieldTint = new Color(0, 0.7f, 1f, 0.5f);
-            targetColor = Color.Lerp(targetColor, shieldTint, 0.5f);
-        }
-
-        // Apply the final color
+        // Update bubble transparency only
         if (m_SpriteRenderer != null)
         {
-            m_SpriteRenderer.color = targetColor;
+            Color bubbleColor = m_BaseColor;
+            
+            // Apply charge effect (only modify alpha)
+            if (_chargePercent > 0)
+            {
+                bubbleColor.a = Mathf.Lerp(1f, m_ChargeTransparency, _chargePercent);
+            }
+            
+            // Apply shield effect on top if active
+            if (m_IsShielded)
+            {
+                Color shieldTint = new Color(0, 0.7f, 1f, 0.5f);
+                bubbleColor = Color.Lerp(bubbleColor, shieldTint, 0.5f);
+            }
+
+            m_SpriteRenderer.color = bubbleColor;
         }
     }
 

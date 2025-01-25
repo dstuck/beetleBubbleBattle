@@ -176,6 +176,8 @@ MonoBehaviour:
   m_DischargeShrinkRate: 0.2
   m_ChargeTransparency: 0.5
   m_BounceForce: 1
+  m_BugRenderer: {fileID: 0}
+  m_BugSprite: {fileID: 8420224660069180320, guid: bde351e0903f04568a4fa5607fabf7c6, type: 3}
 --- !u!114 &5609207401581149661
 MonoBehaviour:
   m_ObjectHideFlags: 0
