@@ -1262,6 +1262,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1652097425}
+  - {fileID: 1119679642}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1011737550
@@ -1406,6 +1407,53 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1401ab2e891aa4e398fa77244ee6e0ca, type: 3}
+--- !u!1 &1119679641
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1119679642}
+  - component: {fileID: 1119679643}
+  m_Layer: 0
+  m_Name: ItemSpawnPoint2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1119679642
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1119679641}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.32, y: -3.63, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 869205895}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1119679643
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1119679641}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c45ead0c657fe4999a7a8863cc74dac4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_ItemType: 1
+  m_SpawnDelay: 5
+  m_ItemPickupPrefab: {fileID: 0}
 --- !u!1 &1405667066
 GameObject:
   m_ObjectHideFlags: 0
@@ -1856,6 +1904,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1652097425}
+  - component: {fileID: 1652097426}
   m_Layer: 0
   m_Name: ItemSpawnPoint
   m_TagString: Untagged
@@ -1878,6 +1927,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 869205895}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1652097426
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1652097424}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c45ead0c657fe4999a7a8863cc74dac4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_ItemType: 0
+  m_SpawnDelay: 5
+  m_ItemPickupPrefab: {fileID: 0}
 --- !u!1 &1658327966
 GameObject:
   m_ObjectHideFlags: 0
@@ -2134,6 +2198,7 @@ MonoBehaviour:
   m_ItemPickupPrefab: {fileID: 8310999048029896249, guid: 267b3f4814e9b42b49551926efa4e98d, type: 3}
   m_ItemSpawnPoints:
   - {fileID: 1652097425}
+  - {fileID: 1119679642}
   m_ItemSpawnInterval: 5
 --- !u!4 &1789052254
 Transform:

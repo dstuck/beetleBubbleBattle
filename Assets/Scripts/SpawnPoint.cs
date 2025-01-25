@@ -10,10 +10,15 @@ public class SpawnPoint : MonoBehaviour
 
     #region Private Fields
     private bool m_IsSpawning;
-    private GameObject m_CurrentItem;
+    private ItemPickup m_CurrentItem;
     #endregion
 
     #region Unity Lifecycle
+    private void Start()
+    {
+        SpawnItem();
+    }
+
     private void OnEnable()
     {
         ItemPickup.OnItemCollected += HandleItemCollected;
@@ -23,18 +28,14 @@ public class SpawnPoint : MonoBehaviour
     {
         ItemPickup.OnItemCollected -= HandleItemCollected;
     }
-
-    private void Start()
-    {
-        StartSpawnCycle();
-    }
     #endregion
 
     #region Private Methods
-    private void HandleItemCollected()
+    private void HandleItemCollected(ItemPickup _collectedItem)
     {
-        if (m_CurrentItem == null)
+        if (_collectedItem == m_CurrentItem)
         {
+            m_CurrentItem = null;
             StartSpawnCycle();
         }
     }
@@ -57,7 +58,7 @@ public class SpawnPoint : MonoBehaviour
 
     private void SpawnItem()
     {
-        if (m_CurrentItem != null) return;
+        if (m_CurrentItem != null || GameManager.Instance == null) return;
 
         var itemPrefab = GameManager.Instance.ItemPickupPrefab;
         if (itemPrefab == null)
@@ -66,10 +67,18 @@ public class SpawnPoint : MonoBehaviour
             return;
         }
 
-        m_CurrentItem = Instantiate(itemPrefab, transform.position, Quaternion.identity);
-        var itemPickup = m_CurrentItem.GetComponent<ItemPickup>();
-        itemPickup.SpawnPoint = transform;
-        itemPickup.Type = m_ItemType;
+        var item = Instantiate(itemPrefab, transform.position, Quaternion.identity);
+        m_CurrentItem = item.GetComponent<ItemPickup>();
+        
+        if (m_CurrentItem != null)
+        {
+            m_CurrentItem.SpawnPoint = transform;
+            m_CurrentItem.Type = m_ItemType;
+        }
+        else
+        {
+            Debug.LogError("SpawnPoint: ItemPickup component not found on prefab!");
+        }
     }
     #endregion
 } 

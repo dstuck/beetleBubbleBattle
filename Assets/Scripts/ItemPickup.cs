@@ -14,7 +14,7 @@ public class ItemPickup : MonoBehaviour
     #endregion
 
     #region Events
-    public static event System.Action OnItemCollected;
+    public static event System.Action<ItemPickup> OnItemCollected;
     #endregion
 
     #region Properties
@@ -59,13 +59,12 @@ public class ItemPickup : MonoBehaviour
         {
             Debug.Log($"Player {player.GetComponent<PlayerInput>()?.playerIndex ?? -1} picked up {m_ItemType}");
             
-            // Add appropriate effect
             ItemEffect effect = m_ItemType == ItemType.Shield ?
                 player.gameObject.AddComponent<ShieldEffect>() :
                 player.gameObject.AddComponent<PowerChargeEffect>();
             
             effect.Initialize(player);
-            OnItemCollected?.Invoke();
+            OnItemCollected?.Invoke(this);
             Destroy(gameObject);
         }
     }
