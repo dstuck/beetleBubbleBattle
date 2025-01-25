@@ -18,20 +18,35 @@ public class BeetleBubble : MonoBehaviour
     
     [Header("Visual Properties")]
     [SerializeField, Range(0.2f, 1f)] private float m_ChargeTransparency = 0.5f;
+    [SerializeField] private float m_BounceForce = 1f;
 
-    [SerializeField] private float m_BounceForce = 1f;  // Multiplier for bounce force
+    [Header("References")]
+    [SerializeField] private Transform m_BubbleTransform;
     #endregion
 
     #region Private Fields
     private Rigidbody2D m_Rigidbody;
-    private SpriteRenderer m_SpriteRenderer;
     private Vector2 m_MoveDirection;
     private Vector2 m_LastValidMoveDirection = Vector2.right;
     private float m_CurrentCharge;
     private bool m_IsCharging;
     private float m_CurrentSize = 1f;
-    private Color m_OriginalColor;
     private Vector3 m_StartPosition;
+    private bool m_IsShielded;
+    #endregion
+
+    #region Public Properties
+    public float ChargeRate
+    {
+        get => m_ChargeRate;
+        set => m_ChargeRate = value;
+    }
+
+    public bool IsShielded
+    {
+        get => m_IsShielded;
+        set => m_IsShielded = value;
+    }
     #endregion
 
     #region Unity Lifecycle
@@ -39,15 +54,13 @@ public class BeetleBubble : MonoBehaviour
     {
         Debug.Log($"BeetleBubble: Awake for Player {GetComponent<PlayerInput>()?.playerIndex ?? -1}");
         m_Rigidbody = GetComponent<Rigidbody2D>();
-        m_SpriteRenderer = GetComponent<SpriteRenderer>();
         
-        if (m_SpriteRenderer == null)
+        if (m_Rigidbody == null)
         {
-            Debug.LogError("BeetleBubble: No SpriteRenderer found!");
+            Debug.LogError("BeetleBubble: No Rigidbody2D found!");
             return;
         }
         
-        m_OriginalColor = m_SpriteRenderer.color;
         m_Rigidbody.mass = m_BaseWeight;
         m_Rigidbody.linearDamping = m_BaseDamping;
         m_Rigidbody.gravityScale = 0f;
@@ -78,6 +91,10 @@ public class BeetleBubble : MonoBehaviour
         if (m_MoveDirection != Vector2.zero)
         {
             m_LastValidMoveDirection = m_MoveDirection.normalized;
+            
+            // Calculate rotation based on movement direction, offset by -90 to account for initial upward orientation
+            float angle = Mathf.Atan2(m_MoveDirection.y, m_MoveDirection.x) * Mathf.Rad2Deg - 90f;
+            transform.rotation = Quaternion.Euler(0, 0, angle);
         }
     }
 
@@ -101,7 +118,7 @@ public class BeetleBubble : MonoBehaviour
         
         // Increase size while charging
         m_CurrentSize = Mathf.Min(m_CurrentSize + m_ChargeGrowthRate * Time.deltaTime, m_MaxSize);
-        transform.localScale = Vector3.one * m_CurrentSize;
+        UpdateSize(m_CurrentSize);
         
         // Update mass based on size
         m_Rigidbody.mass = m_BaseWeight * m_CurrentSize;
@@ -134,23 +151,33 @@ public class BeetleBubble : MonoBehaviour
         totalForce *= sizeMultiplier;
 
         m_Rigidbody.AddForce(burstDirection * totalForce, ForceMode2D.Impulse);
-        Debug.Log($"BeetleBubble: Burst applied - Direction: {burstDirection}, Force: {totalForce:F2}");
         
         // Decrease size after burst with smaller rate
         m_CurrentSize = Mathf.Max(m_CurrentSize - m_DischargeShrinkRate, m_MinSize);
-        transform.localScale = Vector3.one * m_CurrentSize;
+        UpdateSize(m_CurrentSize);
         
         // Reset charge
         m_CurrentCharge = 0f;
     }
     
-    private void UpdateVisuals(float _alpha)
+    private void UpdateVisuals(float _chargePercent)
     {
-        if (m_SpriteRenderer != null)
+        if (m_BubbleTransform != null && m_BubbleTransform.TryGetComponent<SpriteRenderer>(out var bubbleRenderer))
         {
-            Color newColor = m_OriginalColor;
-            newColor.a = _alpha;
-            m_SpriteRenderer.color = newColor;
+            Color color = bubbleRenderer.color;
+            
+            if (_chargePercent > 0)
+            {
+                color.a = Mathf.Lerp(1f, m_ChargeTransparency, _chargePercent);
+            }
+            
+            if (m_IsShielded)
+            {
+                Color shieldTint = new Color(0, 0.7f, 1f, 0.5f);
+                color = Color.Lerp(color, shieldTint, 0.5f);
+            }
+
+            bubbleRenderer.color = color;
         }
     }
 
@@ -172,18 +199,45 @@ public class BeetleBubble : MonoBehaviour
         // Reset size and visuals
         m_CurrentSize = 1f;
         m_CurrentCharge = 0f;
-        transform.localScale = Vector3.one;
+        UpdateSize(m_CurrentSize);
         UpdateVisuals(1f);
     }
 
     private PhysicsMaterial2D CreateBouncyMaterial()
     {
-        var material = new PhysicsMaterial2D("BubbleBounce")
+        var material = new PhysicsMaterial2D("BeetleBounce")
         {
             friction = 0f,
-            bounciness = 1f
+            bounciness = 0.2f
         };
         return material;
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (m_IsShielded) return;
+
+        // Check if we hit another beetle
+        if (collision.gameObject.TryGetComponent<BeetleBubble>(out var otherBeetle))
+        {
+            // Calculate bounce force based on both beetles' sizes
+            float combinedSize = m_CurrentSize + otherBeetle.m_CurrentSize;
+            Vector2 bounceDirection = (transform.position - collision.transform.position).normalized;
+            float bounceForce = m_BounceForce * combinedSize;
+            
+            // Apply bounce force
+            m_Rigidbody.AddForce(bounceDirection * bounceForce, ForceMode2D.Impulse);
+        }
+    }
+
+    private void UpdateSize(float _newSize)
+    {
+        m_CurrentSize = _newSize;
+        // Scale the bubble
+        if (m_BubbleTransform != null)
+        {
+            m_BubbleTransform.localScale = Vector3.one * m_CurrentSize;
+        }
     }
     #endregion
 } 

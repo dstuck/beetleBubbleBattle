@@ -13,7 +13,7 @@ v0.3 multiplayer
 - [x] Other players can spawn in by pressing start
 - [ ] Player 2 starts out as a bot that just does basic movement and doesn’t die
 v0.4 Items
-- [ ] Create item blocks
+- [x] Create item blocks
 - [ ] Power charge - charge up fast
 - [ ] Shield - no knockback, no spikes
 - [ ] ice - other bubbles lose drag and decreased bursts
@@ -55,3 +55,9 @@ Maybe there are coins or something to collect that
 
 # Level design
 Items should spawn in risky locations like near spikes or in tight quarters
+
+
+Control ideas:
+introduce a hit state so that you can modify drag and potentially disable charging
+
+Add arrow showing direction
