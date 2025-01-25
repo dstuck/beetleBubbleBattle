@@ -134,7 +134,6 @@ public class BeetleBubble : MonoBehaviour
         totalForce *= sizeMultiplier;
 
         m_Rigidbody.AddForce(burstDirection * totalForce, ForceMode2D.Impulse);
-        Debug.Log($"BeetleBubble: Burst applied - Direction: {burstDirection}, Force: {totalForce:F2}");
         
         // Decrease size after burst with smaller rate
         m_CurrentSize = Mathf.Max(m_CurrentSize - m_DischargeShrinkRate, m_MinSize);
