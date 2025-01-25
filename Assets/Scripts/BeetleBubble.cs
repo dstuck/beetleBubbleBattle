@@ -30,8 +30,23 @@ public class BeetleBubble : MonoBehaviour
     private float m_CurrentCharge;
     private bool m_IsCharging;
     private float m_CurrentSize = 1f;
-    private Color m_OriginalColor;
+    private Color m_BaseColor = Color.white;  // Base color is white
     private Vector3 m_StartPosition;
+    private bool m_IsShielded;
+    #endregion
+
+    #region Public Properties
+    public float ChargeRate
+    {
+        get => m_ChargeRate;
+        set => m_ChargeRate = value;
+    }
+
+    public bool IsShielded
+    {
+        get => m_IsShielded;
+        set => m_IsShielded = value;
+    }
     #endregion
 
     #region Unity Lifecycle
@@ -47,7 +62,6 @@ public class BeetleBubble : MonoBehaviour
             return;
         }
         
-        m_OriginalColor = m_SpriteRenderer.color;
         m_Rigidbody.mass = m_BaseWeight;
         m_Rigidbody.linearDamping = m_BaseDamping;
         m_Rigidbody.gravityScale = 0f;
@@ -143,13 +157,27 @@ public class BeetleBubble : MonoBehaviour
         m_CurrentCharge = 0f;
     }
     
-    private void UpdateVisuals(float _alpha)
+    private void UpdateVisuals(float _chargePercent)
     {
+        Color targetColor = m_BaseColor;
+        
+        // Apply charge effect (only modify alpha)
+        if (_chargePercent > 0)
+        {
+            targetColor.a = Mathf.Lerp(1f, m_ChargeTransparency, _chargePercent);
+        }
+        
+        // Apply shield effect on top if active
+        if (m_IsShielded)
+        {
+            Color shieldTint = new Color(0, 0.7f, 1f, 0.5f);
+            targetColor = Color.Lerp(targetColor, shieldTint, 0.5f);
+        }
+
+        // Apply the final color
         if (m_SpriteRenderer != null)
         {
-            Color newColor = m_OriginalColor;
-            newColor.a = _alpha;
-            m_SpriteRenderer.color = newColor;
+            m_SpriteRenderer.color = targetColor;
         }
     }
 
@@ -183,6 +211,13 @@ public class BeetleBubble : MonoBehaviour
             bounciness = 1f
         };
         return material;
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (m_IsShielded) return; // Ignore collisions when shielded
+        
+        // Handle other collision logic here
     }
     #endregion
 } 

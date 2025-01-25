@@ -17,6 +17,9 @@ public class Spike : MonoBehaviour
         if (!collision.gameObject.TryGetComponent<BeetleBubble>(out var bubble))
             return;
             
+        if (bubble.IsShielded)
+            return;
+            
         // Get the direction the bubble is coming from
         Vector2 collisionDirection = collision.GetContact(0).point - (Vector2)transform.position;
         float angle = Vector2.Angle(m_SpikeDirection, collisionDirection);

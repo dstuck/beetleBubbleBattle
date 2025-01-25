@@ -5,6 +5,14 @@ using System.Collections;
 
 public class GameManager : MonoBehaviour
 {
+    #region Singleton
+    public static GameManager Instance { get; private set; }
+    #endregion
+
+    #region Public Properties
+    public GameObject ItemPickupPrefab => m_ItemPickupPrefab;
+    #endregion
+
     #region Constants
     private const int c_TargetWidth = 1920;
     private const int c_TargetHeight = 1080;
@@ -25,6 +33,16 @@ public class GameManager : MonoBehaviour
     #region Unity Lifecycle
     private void Awake()
     {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         Screen.SetResolution(c_TargetWidth, c_TargetHeight, FullScreenMode.Windowed);
     }
 
@@ -85,7 +103,13 @@ public class GameManager : MonoBehaviour
         }
 
         var item = Instantiate(m_ItemPickupPrefab, spawnPoint.position, Quaternion.identity);
-        item.GetComponent<ItemPickup>().SpawnPoint = spawnPoint;
+        var itemPickup = item.GetComponent<ItemPickup>();
+        itemPickup.SpawnPoint = spawnPoint;
+        
+        // Set type based on spawn point index
+        itemPickup.Type = spawnPoint == m_ItemSpawnPoints[0] ? 
+            ItemPickup.ItemType.Shield : 
+            ItemPickup.ItemType.PowerCharge;
     }
     #endregion
 
