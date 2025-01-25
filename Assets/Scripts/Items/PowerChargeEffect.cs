@@ -10,6 +10,7 @@ public class PowerChargeEffect : ItemEffect
 
     #region Private Fields
     private float m_OriginalChargeRate;
+    private float m_OriginalGrowthRate;
     private ParticleSystem m_PowerParticles;
     #endregion
 
@@ -21,9 +22,13 @@ public class PowerChargeEffect : ItemEffect
             return;
         }
         
-        // Store original charge rate
+        // Store original rates
         m_OriginalChargeRate = m_TargetBeetle.ChargeRate;
+        m_OriginalGrowthRate = m_TargetBeetle.ChargeGrowthRate;
+
+        // Boost both charge and growth rates
         m_TargetBeetle.ChargeRate *= c_ChargeMultiplier;
+        m_TargetBeetle.ChargeGrowthRate *= c_ChargeMultiplier;
         
         // Create particle system
         var particleObj = new GameObject("PowerParticles");
@@ -32,7 +37,10 @@ public class PowerChargeEffect : ItemEffect
         
         m_PowerParticles = particleObj.AddComponent<ParticleSystem>();
         var particleRenderer = m_PowerParticles.GetComponent<ParticleSystemRenderer>();
-        particleRenderer.material = Resources.GetBuiltinResource<Material>("Sprite-Default.mat");
+        
+        // Use default particle material
+        particleRenderer.material = new Material(Shader.Find("Particles/Standard Unlit"));
+        particleRenderer.sortingOrder = 2;
         
         ConfigureParticleSystem();
         m_PowerParticles.Play();
@@ -74,14 +82,12 @@ public class PowerChargeEffect : ItemEffect
 
     protected override void OnEffectEnd()
     {
-        if (m_TargetBeetle == null)
+        if (m_TargetBeetle != null)
         {
-            Debug.LogError("PowerChargeEffect: No target beetle on end!");
-            return;
+            // Restore original rates
+            m_TargetBeetle.ChargeRate = m_OriginalChargeRate;
+            m_TargetBeetle.ChargeGrowthRate = m_OriginalGrowthRate;
         }
-        
-        m_TargetBeetle.ChargeRate = m_OriginalChargeRate;
-        Debug.Log($"PowerChargeEffect: Charge rate restored to {m_OriginalChargeRate}");
 
         if (m_PowerParticles != null)
         {

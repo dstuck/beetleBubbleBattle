@@ -11,11 +11,18 @@ public class SpawnPoint : MonoBehaviour
     #region Private Fields
     private bool m_IsSpawning;
     private ItemPickup m_CurrentItem;
+    private LevelManager m_LevelManager;
     #endregion
 
     #region Unity Lifecycle
     private void Start()
     {
+        m_LevelManager = FindFirstObjectByType<LevelManager>();
+        if (m_LevelManager == null)
+        {
+            Debug.LogError("SpawnPoint: No LevelManager found in scene!");
+            return;
+        }
         SpawnItem();
     }
 
@@ -31,6 +38,23 @@ public class SpawnPoint : MonoBehaviour
     #endregion
 
     #region Private Methods
+    private void SpawnItem()
+    {
+        if (m_CurrentItem != null || m_LevelManager == null) return;
+
+        GameObject itemObj = Instantiate(m_LevelManager.GetItemPickupPrefab(), transform.position, Quaternion.identity);
+        m_CurrentItem = itemObj.GetComponent<ItemPickup>();
+        if (m_CurrentItem != null)
+        {
+            m_CurrentItem.SpawnPoint = transform;
+            m_CurrentItem.Type = m_ItemType;
+        }
+        else
+        {
+            Debug.LogError("SpawnPoint: ItemPickup component not found on prefab!");
+        }
+    }
+
     private void HandleItemCollected(ItemPickup _collectedItem)
     {
         if (_collectedItem == m_CurrentItem)
@@ -54,31 +78,6 @@ public class SpawnPoint : MonoBehaviour
         yield return new WaitForSeconds(m_SpawnDelay);
         SpawnItem();
         m_IsSpawning = false;
-    }
-
-    private void SpawnItem()
-    {
-        if (m_CurrentItem != null || GameManager.Instance == null) return;
-
-        var itemPrefab = GameManager.Instance.ItemPickupPrefab;
-        if (itemPrefab == null)
-        {
-            Debug.LogError("SpawnPoint: No item prefab set in GameManager!");
-            return;
-        }
-
-        var item = Instantiate(itemPrefab, transform.position, Quaternion.identity);
-        m_CurrentItem = item.GetComponent<ItemPickup>();
-        
-        if (m_CurrentItem != null)
-        {
-            m_CurrentItem.SpawnPoint = transform;
-            m_CurrentItem.Type = m_ItemType;
-        }
-        else
-        {
-            Debug.LogError("SpawnPoint: ItemPickup component not found on prefab!");
-        }
     }
     #endregion
 } 

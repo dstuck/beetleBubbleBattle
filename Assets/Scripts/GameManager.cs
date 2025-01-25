@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Linq;
-using System.Collections;
+using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour
 {
@@ -9,18 +9,13 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
     #endregion
 
-    #region Public Properties
-    public GameObject ItemPickupPrefab => m_ItemPickupPrefab;
-    #endregion
-
     #region Constants
     private const int c_TargetWidth = 1920;
     private const int c_TargetHeight = 1080;
     #endregion
 
-    #region Serialized Fields
-    [SerializeField] private Transform[] m_SpawnPoints;
-    [SerializeField] private GameObject m_ItemPickupPrefab;
+    #region Private Fields
+    private List<PlayerInput> m_RegisteredPlayers = new List<PlayerInput>();
     #endregion
 
     #region Unity Lifecycle
@@ -29,6 +24,7 @@ public class GameManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
+            DontDestroyOnLoad(gameObject);
         }
         else
         {
@@ -43,25 +39,24 @@ public class GameManager : MonoBehaviour
     #region Public Methods
     public void OnPlayerJoined(PlayerInput playerInput)
     {
-        int playerIndex = playerInput.playerIndex;
-        string scheme = playerInput.currentControlScheme;
-        Debug.Log($"Player {playerIndex} joined with control scheme: {scheme} (using device: {playerInput.devices.FirstOrDefault()?.name ?? "none"})");
-        
-        // Assign spawn point if available
-        if (playerIndex < m_SpawnPoints.Length)
+        if (!m_RegisteredPlayers.Contains(playerInput))
         {
-            playerInput.transform.position = m_SpawnPoints[playerIndex].position;
-            Debug.Log($"Spawned player {playerIndex} at position {m_SpawnPoints[playerIndex].position}");
-        }
-        else
-        {
-            Debug.LogWarning($"No spawn point available for player {playerIndex}");
+            m_RegisteredPlayers.Add(playerInput);
+            Debug.Log($"Player {playerInput.playerIndex} joined with control scheme: {playerInput.currentControlScheme} (using device: {playerInput.devices.FirstOrDefault()?.name ?? "none"})");
         }
     }
 
     public void OnPlayerLeft(PlayerInput playerInput)
     {
+        m_RegisteredPlayers.Remove(playerInput);
         Debug.Log($"Player {playerInput.playerIndex} left with control scheme: {playerInput.currentControlScheme}");
+    }
+
+    public int GetPlayerCount() => m_RegisteredPlayers.Count;
+
+    public void ClearPlayers()
+    {
+        m_RegisteredPlayers.Clear();
     }
     #endregion
 } 
