@@ -49,4 +49,12 @@ public class ShieldEffect : ItemEffect
             Destroy(m_ShieldVisual);
         }
     }
+
+    protected override void OnFlickerChange(bool isVisible)
+    {
+        if (m_ShieldVisual != null)
+        {
+            m_ShieldVisual.SetActive(isVisible);
+        }
+    }
 } 

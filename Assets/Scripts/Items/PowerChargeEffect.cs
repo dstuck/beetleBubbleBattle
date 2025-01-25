@@ -4,6 +4,8 @@ public class PowerChargeEffect : ItemEffect
 {
     #region Constants
     private const float c_ChargeMultiplier = 2f;
+    private static readonly Color c_NormalColor = new Color(1f, 1f, 0f, 1f); // Bright yellow
+    private static readonly Color c_WarningColor = new Color(1f, 0f, 0f, 1f); // Bright red
     #endregion
 
     #region Private Fields
@@ -40,7 +42,7 @@ public class PowerChargeEffect : ItemEffect
         main.startLifetime = 0.5f;
         main.startSpeed = 2f;
         main.startSize = 0.2f;
-        main.startColor = new Color(1f, 1f, 0f, 1f); // Bright yellow
+        main.startColor = c_NormalColor;
         
         var emission = m_PowerParticles.emission;
         emission.rateOverTime = 20;
@@ -55,7 +57,7 @@ public class PowerChargeEffect : ItemEffect
         var gradient = new Gradient();
         gradient.SetKeys(
             new GradientColorKey[] { 
-                new GradientColorKey(new Color(1f, 1f, 0f), 0.0f), // Bright yellow
+                new GradientColorKey(c_NormalColor, 0.0f), // Bright yellow
                 new GradientColorKey(new Color(1f, 0.7f, 0f), 1.0f) // Orange-yellow fade
             },
             new GradientAlphaKey[] { 
@@ -84,6 +86,15 @@ public class PowerChargeEffect : ItemEffect
         {
             m_PowerParticles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
             Destroy(m_PowerParticles.gameObject);
+        }
+    }
+
+    protected override void OnFlickerChange(bool isVisible)
+    {
+        if (m_PowerParticles != null)
+        {
+            var main = m_PowerParticles.main;
+            main.startColor = isVisible ? c_NormalColor : c_WarningColor;
         }
     }
 } 
