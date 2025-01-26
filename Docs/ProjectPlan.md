@@ -14,8 +14,8 @@ v0.3 multiplayer
 - [ ] Player 2 starts out as a bot that just does basic movement and doesn’t die
 v0.4 Items
 - [x] Create item blocks
-- [ ] Power charge - charge up fast
-- [ ] Shield - no knockback, no spikes
+- [x] Power charge - charge up fast
+- [x] Shield - no knockback, no spikes
 - [ ] ice - other bubbles lose drag and decreased bursts
 - [ ] Sliding - joystick actually moves you
 v0.5 level design
@@ -25,11 +25,11 @@ v0.5 level design
 - [ ] Maybe floating bubbles
 - [x] Player spawn points
 v0.7 Game management 
-- [ ] Add win condition and scene
+- [x] Add win condition and scene
 - [ ] Possibly add lives
 - [ ] Respawn with short shield
 v0.8 menu
-- [ ] Add player select scene. Set number players and let people hit button to join
+- [x] Add player select scene. Set number players and let people hit button to join
 v1.1 Character select
 - [ ] Rhino beetle - high weight
 - [ ] Ant - high bop

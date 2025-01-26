@@ -23,10 +23,13 @@ public class BeetleBubble : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private Transform m_BubbleTransform;
+    [SerializeField] private SpriteRenderer m_BeetleRenderer;
 
     [Header("Death Properties")]
     [SerializeField] private float m_RespawnDelay = 1f;
+    [SerializeField] private int m_MaxLives = 3;
     private bool m_IsDead = false;
+    private int m_LivesRemaining;
 
     #endregion
 
@@ -59,12 +62,23 @@ public class BeetleBubble : MonoBehaviour
         get => m_IsShielded;
         set => m_IsShielded = value;
     }
+
+    public SpriteRenderer BeetleRenderer => m_BeetleRenderer;
+    #endregion
+
+    #region Public Events
+    public System.Action<int> OnLivesChanged;
     #endregion
 
     #region Unity Lifecycle
     private void Awake()
     {
-        Debug.Log($"BeetleBubble: Awake for Player {GetComponent<PlayerInput>()?.playerIndex ?? -1}");
+        var playerInput = GetComponent<PlayerInput>();
+        Debug.Log($"BeetleBubble: Awake for Player {playerInput?.playerIndex ?? -1}. " +
+                  $"BeetleRenderer null? {m_BeetleRenderer == null}, " +
+                  $"Current sprite null? {m_BeetleRenderer?.sprite == null}, " +
+                  $"Sprite name: {m_BeetleRenderer?.sprite?.name ?? "none"}");
+        
         m_Rigidbody = GetComponent<Rigidbody2D>();
         
         if (m_Rigidbody == null)
@@ -77,6 +91,7 @@ public class BeetleBubble : MonoBehaviour
         m_Rigidbody.linearDamping = m_BaseDamping;
         m_Rigidbody.gravityScale = 0f;
         m_StartPosition = transform.position;
+        m_LivesRemaining = m_MaxLives;
 
         // Configure physics for bouncing
         if (m_Rigidbody != null)
@@ -84,6 +99,15 @@ public class BeetleBubble : MonoBehaviour
             m_Rigidbody.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
             m_Rigidbody.sharedMaterial = CreateBouncyMaterial();
         }
+    }
+
+    private void Start()
+    {
+        var playerInput = GetComponent<PlayerInput>();
+        Debug.Log($"BeetleBubble: Start for Player {playerInput?.playerIndex ?? -1}. " +
+                  $"BeetleRenderer null? {m_BeetleRenderer == null}, " +
+                  $"Current sprite null? {m_BeetleRenderer?.sprite == null}, " +
+                  $"Sprite name: {m_BeetleRenderer?.sprite?.name ?? "none"}");
     }
 
     private void Update()
@@ -248,6 +272,12 @@ public class BeetleBubble : MonoBehaviour
             
             Debug.Log($"Applied bounce force: {bounceForce.magnitude}");
         }
+
+        // Check if we hit a spike
+        if (collision.gameObject.TryGetComponent<Spike>(out _))
+        {
+            OnHitSpike();
+        }
     }
 
     private void UpdateSize(float _newSize)
@@ -262,10 +292,32 @@ public class BeetleBubble : MonoBehaviour
 
     public void ResetState()
     {
+        var playerInput = GetComponent<PlayerInput>();
+        // Store the current beetle sprite before re-enabling children
+        Sprite currentSprite = null;
+        if (m_BeetleRenderer != null)
+        {
+            currentSprite = m_BeetleRenderer.sprite;
+            Debug.Log($"BeetleBubble: ResetState - Player {playerInput?.playerIndex ?? -1} - " +
+                      $"Stored current sprite. Sprite null? {currentSprite == null}, " +
+                      $"Sprite name: {currentSprite?.name ?? "none"}");
+        }
+
         // Re-enable visuals and physics
         foreach (Transform child in transform)
         {
             child.gameObject.SetActive(true);
+        }
+        
+        // Restore the beetle sprite
+        if (m_BeetleRenderer != null && currentSprite != null)
+        {
+            Debug.Log($"BeetleBubble: ResetState - Restoring sprite");
+            m_BeetleRenderer.sprite = currentSprite;
+        }
+        else
+        {
+            Debug.LogWarning($"BeetleBubble: ResetState - Failed to restore sprite. BeetleRenderer null? {m_BeetleRenderer == null}, Stored sprite null? {currentSprite == null}");
         }
         
         if (m_Rigidbody != null)
@@ -282,18 +334,12 @@ public class BeetleBubble : MonoBehaviour
         UpdateVisuals(1f);
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
-    {
-        if (other.CompareTag("DeathZone"))
-        {
-            GameManager.Instance.RespawnPlayer(GetComponent<PlayerInput>());
-        }
-    }
-
     public void OnHitSpike()
     {
         if (IsShielded || m_IsDead) return;
         m_IsDead = true;
+        m_LivesRemaining--;
+        OnLivesChanged?.Invoke(m_LivesRemaining);
 
         // Disable visuals and physics
         foreach (Transform child in transform)
@@ -304,6 +350,13 @@ public class BeetleBubble : MonoBehaviour
         if (m_Rigidbody != null)
         {
             m_Rigidbody.simulated = false;
+        }
+
+        if (m_LivesRemaining <= 0)
+        {
+            GameManager.Instance.OnPlayerEliminated(GetComponent<PlayerInput>());
+            // Don't start respawn sequence if eliminated
+            return;
         }
 
         // Start respawn sequence
@@ -317,6 +370,27 @@ public class BeetleBubble : MonoBehaviour
         // Request respawn from GameManager
         GameManager.Instance.RespawnPlayer(GetComponent<PlayerInput>());
         m_IsDead = false;
+    }
+
+    public void ResetChargeState()
+    {
+        // Reset all charge-related states
+        m_IsCharging = false;
+        m_CurrentCharge = 0f;
+        m_CurrentSize = 1f;
+        m_MoveDirection = Vector2.zero;  // Reset move direction to prevent bursting
+        m_LastValidMoveDirection = Vector2.right;  // Reset to default direction
+        
+        // Reset visuals without triggering any burst
+        UpdateVisuals(1f);
+        UpdateSize(1f);
+        
+        // Reset physics
+        if (m_Rigidbody != null)
+        {
+            m_Rigidbody.linearVelocity = Vector2.zero;
+            m_Rigidbody.angularVelocity = 0f;
+        }
     }
     #endregion
 } 

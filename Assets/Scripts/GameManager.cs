@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Linq;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -17,9 +18,11 @@ public class GameManager : MonoBehaviour
     #region Private Fields
     [Header("Player Setup")]
     [SerializeField] private GameObject m_BeetleBubblePrefab;
+    [SerializeField] private Sprite[] m_BeetleSprites = new Sprite[4];
     
     private List<PlayerInput> m_RegisteredPlayers = new List<PlayerInput>();
     private Dictionary<PlayerInput, Vector3> m_PlayerSpawnPoints = new Dictionary<PlayerInput, Vector3>();
+    private HashSet<PlayerInput> m_EliminatedPlayers = new HashSet<PlayerInput>();
     private PlayerInputManager m_PlayerInputManager;
     #endregion
 
@@ -35,6 +38,7 @@ public class GameManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+            Debug.Log($"GameManager initialized. Registered players: {m_RegisteredPlayers?.Count ?? 0}");
             
             // Configure PlayerInputManager
             m_PlayerInputManager = GetComponent<PlayerInputManager>();
@@ -115,20 +119,13 @@ public class GameManager : MonoBehaviour
         return m_RegisteredPlayers.ToArray();
     }
 
-    public GameObject CreatePlayerWithInput(int playerIndex, Vector3 spawnPosition)
+    public Sprite GetBeetleSprite(int playerIndex)
     {
-        if (playerIndex >= m_RegisteredPlayers.Count) return null;
-
-        PlayerInput menuPlayerInput = m_RegisteredPlayers[playerIndex];
-        GameObject beetleBubble = Instantiate(m_BeetleBubblePrefab, spawnPosition, Quaternion.identity);
-        PlayerInput gamePlayerInput = beetleBubble.GetComponent<PlayerInput>();
-            
-        // Copy the device from the menu player input to the game player input
-        gamePlayerInput.SwitchCurrentControlScheme(
-            menuPlayerInput.currentControlScheme,
-            menuPlayerInput.devices.First());
-
-        return beetleBubble;
+        if (playerIndex >= 0 && playerIndex < m_BeetleSprites.Length)
+        {
+            return m_BeetleSprites[playerIndex];
+        }
+        return null;
     }
 
     public void RespawnPlayer(PlayerInput playerInput)
@@ -150,6 +147,87 @@ public class GameManager : MonoBehaviour
         {
             m_PlayerSpawnPoints[playerInput] = spawnPosition;
         }
+    }
+
+    public void OnPlayerEliminated(PlayerInput playerInput)
+    {
+        if (!m_EliminatedPlayers.Contains(playerInput))
+        {
+            m_EliminatedPlayers.Add(playerInput);
+            CheckWinCondition();
+        }
+    }
+
+    private void CheckWinCondition()
+    {
+        int remainingPlayers = m_RegisteredPlayers.Count - m_EliminatedPlayers.Count;
+        
+        if (remainingPlayers <= 1)
+        {
+            StartCoroutine(LoadWinScene());
+        }
+    }
+
+    private System.Collections.IEnumerator LoadWinScene()
+    {
+        yield return new WaitForSeconds(1f);
+        
+        // Destroy all player objects
+        foreach (var player in m_RegisteredPlayers)
+        {
+            if (player != null)
+            {
+                Destroy(player.gameObject);
+            }
+        }
+        
+        SceneManager.LoadScene("WinScene");
+    }
+
+    public bool IsPlayerEliminated(PlayerInput playerInput)
+    {
+        return m_EliminatedPlayers.Contains(playerInput);
+    }
+
+    public void ResetGameState()
+    {
+        // Clear eliminated players
+        m_EliminatedPlayers.Clear();
+        
+        // Destroy all player objects
+        foreach (var player in m_RegisteredPlayers)
+        {
+            if (player != null)
+            {
+                Destroy(player.gameObject);
+            }
+        }
+        m_RegisteredPlayers.Clear();
+        m_PlayerSpawnPoints.Clear();
+        
+        // Re-enable player joining
+        if (m_PlayerInputManager != null)
+        {
+            m_PlayerInputManager.enabled = true;
+        }
+        
+        // Destroy the GameManager itself
+        Destroy(gameObject);
+    }
+
+    public void EnablePlayerControls(PlayerInput playerInput, float delay = 0.5f)
+    {
+        StartCoroutine(EnablePlayerControlsRoutine(playerInput, delay));
+    }
+
+    private System.Collections.IEnumerator EnablePlayerControlsRoutine(PlayerInput playerInput, float delay)
+    {
+        Debug.Log($"Enabling player controls for player {playerInput.playerIndex} with delay {delay}");
+        yield return new WaitForSeconds(delay);
+        
+        // Enable the Player action map
+        playerInput.actions.FindActionMap("Player").Enable();
+        Debug.Log($"Player controls enabled for player {playerInput.playerIndex}");
     }
     #endregion
 } 

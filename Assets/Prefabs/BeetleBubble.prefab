@@ -18,7 +18,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &3254814729587177301
 Transform:
   m_ObjectHideFlags: 0
@@ -86,6 +86,9 @@ MonoBehaviour:
   m_ChargeTransparency: 0.5
   m_BounceForce: 1
   m_BubbleTransform: {fileID: 3813455873162634488}
+  m_BeetleRenderer: {fileID: 935383048547104207}
+  m_RespawnDelay: 1
+  m_MaxLives: 3
 --- !u!114 &5609207401581149661
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -145,8 +148,10 @@ MonoBehaviour:
     m_ActionName: 'Player/Charge[/Keyboard/space,/Keyboard/rightAlt]'
   - m_PersistentCalls:
       m_Calls: []
-    m_ActionId: 63aa4ec2-0802-4a45-b268-760e1c4640b3
-    m_ActionName: UI/New action
+    m_ActionId: 3036ad82-9815-415a-87f3-132d990c7ecd
+    m_ActionName: 'UI/Charge[/Keyboard/space,/XboxOneGampadMacOSWireless/buttonSouth,/Keyboard/rightAlt,/Logitech
+      Logitech Dual Action/trigger,/Mouse/leftButton,/Pen/tip,/Logitech Logitech
+      Dual Action/button2,/Keyboard/j]'
   m_NeverAutoSwitchControlSchemes: 1
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
