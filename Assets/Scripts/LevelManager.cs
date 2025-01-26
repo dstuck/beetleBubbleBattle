@@ -20,6 +20,7 @@ public class LevelManager : MonoBehaviour
     private void SpawnPlayers()
     {
         PlayerInput[] registeredPlayers = GameManager.Instance.GetRegisteredPlayers();
+        Debug.Log($"SpawnPlayers called. Number of registered players: {registeredPlayers.Length}");
         
         for (int i = 0; i < registeredPlayers.Length; i++)
         {
@@ -34,6 +35,13 @@ public class LevelManager : MonoBehaviour
                 
                 // Position the player
                 player.transform.position = spawnPosition;
+                
+                // Set the beetle sprite
+                var beetleComponent = player.GetComponent<BeetleBubble>();
+                if (beetleComponent != null && beetleComponent.BeetleRenderer != null)
+                {
+                    beetleComponent.BeetleRenderer.sprite = GameManager.Instance.GetBeetleSprite(i);
+                }
                 
                 // Enable the Player action map
                 playerInput.actions.FindActionMap("Player").Enable();
