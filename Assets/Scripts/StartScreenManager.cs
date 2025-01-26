@@ -58,7 +58,6 @@ public class StartScreenManager : MonoBehaviour
                 
                 if (m_CurrentChargeTime >= m_ChargeTimeRequired)
                 {
-                    Debug.Log("Starting game!");
                     m_GameStarting = true;
                     StartGame();
                 }
@@ -101,12 +100,18 @@ public class StartScreenManager : MonoBehaviour
         m_PlayerChargingStates[playerInput] = false;
         
         // Debug log the action map and charge action
-        Debug.Log($"Player {playerInput.playerIndex} joined. Actions: {playerInput.actions.name}, " +
-                 $"Has Charge action: {playerInput.actions["Charge"] != null}, " +
-                 $"Control scheme: {playerInput.currentControlScheme}");
+        var chargeAction = playerInput.actions["Charge"];
         
-        playerInput.actions["Charge"].performed += OnChargePerformed;
-        playerInput.actions["Charge"].canceled += OnChargePerformed;
+        if (chargeAction != null)
+        {
+            chargeAction.Enable();  // Make sure the action is enabled
+            chargeAction.performed += OnChargePerformed;
+            chargeAction.canceled += OnChargePerformed;
+        }
+        else
+        {
+            Debug.LogError($"Failed to find Charge action for Player {playerInput.playerIndex}");
+        }
 
         // Update UI with the correct beetle sprite
         m_JoinTexts[m_PlayerCount].text = $"Player {m_PlayerCount + 1}";
@@ -143,15 +148,24 @@ public class StartScreenManager : MonoBehaviour
 
     public void OnChargePerformed(InputAction.CallbackContext context)
     {
-        // Find the player by matching the action's binding context with our registered players
+        // Get the player input that triggered this action
         var playerInput = m_RegisteredPlayers.Find(p => p.actions == context.action.actionMap.asset);
+        
         if (playerInput == null)
         {
-            Debug.LogError($"Could not find player for action {context.action.name} in map {context.action.actionMap.name}. " +
-                         $"Registered players: {string.Join(", ", m_RegisteredPlayers.Select(p => $"P{p.playerIndex}"))}");
+            // If direct match fails, try matching by control scheme
+            var controlScheme = context.action.actionMap.asset.name.Contains("Clone") ? "Keyboard" : "Gamepad";
+            playerInput = m_RegisteredPlayers.Find(p => p.currentControlScheme == controlScheme);
+        }
+        
+        if (playerInput == null)
+        {
+            Debug.LogError($"Could not find player for action {context.action.name}. " +
+                         $"Action asset: {context.action.actionMap.asset.name}, " +
+                         $"Registered players: {string.Join(", ", m_RegisteredPlayers.Select(p => $"P{p.playerIndex}:{p.currentControlScheme}"))}");
             return;
         }
-
+        
         Debug.Log($"Charge input received from player {playerInput.playerIndex}: {context.phase}. " +
                  $"Registered players: {m_RegisteredPlayers.Count}, " +
                  $"Current charging states: {string.Join(", ", m_PlayerChargingStates.Select(kvp => $"P{kvp.Key.playerIndex}:{kvp.Value}"))}");
@@ -171,6 +185,14 @@ public class StartScreenManager : MonoBehaviour
 
     private void StartGame()
     {
+        // Reset all charging states before starting
+        foreach (var player in m_RegisteredPlayers)
+        {
+            m_PlayerChargingStates[player] = false;
+        }
+        m_CurrentChargeTime = 0f;
+        UpdateChargeBubbles(0f);
+        
         GameManager.Instance.DisableJoining();
         SceneManager.LoadScene("GameScene");
     }

@@ -30,6 +30,9 @@ public class LevelManager : MonoBehaviour
                 GameObject player = playerInput.gameObject;
                 Vector3 spawnPosition = m_SpawnPoints[i].position;
                 
+                // Disable player controls immediately
+                playerInput.actions.FindActionMap("Player").Disable();
+                
                 // Register spawn point before moving the player
                 GameManager.Instance.RegisterSpawnPoint(playerInput, spawnPosition);
                 
@@ -42,15 +45,16 @@ public class LevelManager : MonoBehaviour
                 {
                     beetleComponent.BeetleRenderer.sprite = GameManager.Instance.GetBeetleSprite(i);
                 }
-                
-                // Enable the Player action map
-                playerInput.actions.FindActionMap("Player").Enable();
+                beetleComponent.ResetChargeState();
                 
                 // Enable visual components
                 foreach (Transform child in player.transform)
                 {
                     child.gameObject.SetActive(true);
                 }
+                
+                // Enable player controls with delay
+                GameManager.Instance.EnablePlayerControls(playerInput);
                 
                 Debug.Log($"Positioned player {i} at spawn point {i}: {spawnPosition}");
             }

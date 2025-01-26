@@ -371,5 +371,26 @@ public class BeetleBubble : MonoBehaviour
         GameManager.Instance.RespawnPlayer(GetComponent<PlayerInput>());
         m_IsDead = false;
     }
+
+    public void ResetChargeState()
+    {
+        // Reset all charge-related states
+        m_IsCharging = false;
+        m_CurrentCharge = 0f;
+        m_CurrentSize = 1f;
+        m_MoveDirection = Vector2.zero;  // Reset move direction to prevent bursting
+        m_LastValidMoveDirection = Vector2.right;  // Reset to default direction
+        
+        // Reset visuals without triggering any burst
+        UpdateVisuals(1f);
+        UpdateSize(1f);
+        
+        // Reset physics
+        if (m_Rigidbody != null)
+        {
+            m_Rigidbody.linearVelocity = Vector2.zero;
+            m_Rigidbody.angularVelocity = 0f;
+        }
+    }
     #endregion
 } 

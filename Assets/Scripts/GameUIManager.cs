@@ -19,6 +19,12 @@ public class GameUIManager : MonoBehaviour
     {
         InitializeLifeIcons();
         
+        // Initially hide all life icons
+        for (int i = 0; i < m_PlayerLivesUI.Length; i++)
+        {
+            SetLifeIconsActive(i, false);
+        }
+        
         // Subscribe to player join events
         if (GameManager.Instance != null)
         {
@@ -45,9 +51,23 @@ public class GameUIManager : MonoBehaviour
         }
     }
 
+    private void SetLifeIconsActive(int playerIndex, bool active)
+    {
+        if (playerIndex >= m_PlayerLivesUI.Length) return;
+        
+        var livesUI = m_PlayerLivesUI[playerIndex];
+        if (livesUI.container != null)
+        {
+            livesUI.container.gameObject.SetActive(active);
+        }
+    }
+
     private void SetupPlayerLives(int playerIndex, PlayerInput player)
     {
         if (playerIndex >= m_PlayerLivesUI.Length) return;
+
+        // Enable the life icons container for this player
+        SetLifeIconsActive(playerIndex, true);
 
         // Set the sprite for all life icons
         Sprite beetleSprite = GameManager.Instance.GetBeetleSprite(playerIndex);

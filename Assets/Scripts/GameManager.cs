@@ -214,5 +214,20 @@ public class GameManager : MonoBehaviour
         // Destroy the GameManager itself
         Destroy(gameObject);
     }
+
+    public void EnablePlayerControls(PlayerInput playerInput, float delay = 0.5f)
+    {
+        StartCoroutine(EnablePlayerControlsRoutine(playerInput, delay));
+    }
+
+    private System.Collections.IEnumerator EnablePlayerControlsRoutine(PlayerInput playerInput, float delay)
+    {
+        Debug.Log($"Enabling player controls for player {playerInput.playerIndex} with delay {delay}");
+        yield return new WaitForSeconds(delay);
+        
+        // Enable the Player action map
+        playerInput.actions.FindActionMap("Player").Enable();
+        Debug.Log($"Player controls enabled for player {playerInput.playerIndex}");
+    }
     #endregion
 } 
