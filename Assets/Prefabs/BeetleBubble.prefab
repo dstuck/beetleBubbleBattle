@@ -18,7 +18,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &3254814729587177301
 Transform:
   m_ObjectHideFlags: 0
@@ -76,12 +76,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_BaseWeight: 1.24
-  m_BopForce: 2.64
+  m_BopForce: 3.8
   m_ChargeRate: 14.5
   m_BaseDamping: 2.97
   m_MinSize: 0.75
   m_MaxSize: 4
-  m_ChargeGrowthRate: 0.8
+  m_ChargeGrowthRate: 1
   m_DischargeShrinkRate: 0.2
   m_ChargeTransparency: 0.5
   m_BounceForce: 1

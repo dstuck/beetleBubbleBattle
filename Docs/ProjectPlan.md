@@ -19,11 +19,11 @@ v0.4 Items
 - [ ] ice - other bubbles lose drag and decreased bursts
 - [ ] Sliding - joystick actually moves you
 v0.5 level design
-- [ ] Overall layout of walls and spikes
-- [ ] Item spawn points
+- [x] Overall layout of walls and spikes
+- [x] Item spawn points
 - [ ] Maybe falling rocks
 - [ ] Maybe floating bubbles
-- [ ] Player spawn points
+- [x] Player spawn points
 v0.7 Game management 
 - [ ] Add win condition and scene
 - [ ] Possibly add lives

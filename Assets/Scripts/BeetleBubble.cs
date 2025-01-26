@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections;
 
 public class BeetleBubble : MonoBehaviour
 {
@@ -22,6 +23,11 @@ public class BeetleBubble : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private Transform m_BubbleTransform;
+
+    [Header("Death Properties")]
+    [SerializeField] private float m_RespawnDelay = 1f;
+    private bool m_IsDead = false;
+
     #endregion
 
     #region Private Fields
@@ -40,6 +46,12 @@ public class BeetleBubble : MonoBehaviour
     {
         get => m_ChargeRate;
         set => m_ChargeRate = value;
+    }
+
+    public float ChargeGrowthRate
+    {
+        get => m_ChargeGrowthRate;
+        set => m_ChargeGrowthRate = value;
     }
 
     public bool IsShielded
@@ -171,12 +183,6 @@ public class BeetleBubble : MonoBehaviour
                 color.a = Mathf.Lerp(1f, m_ChargeTransparency, _chargePercent);
             }
             
-            if (m_IsShielded)
-            {
-                Color shieldTint = new Color(0, 0.7f, 1f, 0.5f);
-                color = Color.Lerp(color, shieldTint, 0.5f);
-            }
-
             bubbleRenderer.color = color;
         }
     }
@@ -217,16 +223,30 @@ public class BeetleBubble : MonoBehaviour
     {
         if (m_IsShielded) return;
 
-        // Check if we hit another beetle
-        if (collision.gameObject.TryGetComponent<BeetleBubble>(out var otherBeetle))
+        // Check if we hit another beetle's bubble
+        var otherBeetle = collision.gameObject.GetComponentInParent<BeetleBubble>();
+        if (otherBeetle != null)
         {
-            // Calculate bounce force based on both beetles' sizes
-            float combinedSize = m_CurrentSize + otherBeetle.m_CurrentSize;
-            Vector2 bounceDirection = (transform.position - collision.transform.position).normalized;
-            float bounceForce = m_BounceForce * combinedSize;
+            Debug.Log($"Beetle collision! Self size: {m_CurrentSize}, Other size: {otherBeetle.m_CurrentSize}");
             
-            // Apply bounce force
-            m_Rigidbody.AddForce(bounceDirection * bounceForce, ForceMode2D.Impulse);
+            // Calculate relative velocity
+            Vector2 relativeVelocity = m_Rigidbody.linearVelocity - otherBeetle.m_Rigidbody.linearVelocity;
+            Vector2 collisionNormal = (transform.position - collision.transform.position).normalized;
+            
+            // Base bounce with coefficient of restitution of 1.2
+            float bounceMultiplier = 1.2f;
+            Vector2 bounceForce = collisionNormal * relativeVelocity.magnitude * bounceMultiplier;
+            
+            // Apply size difference as a small modifier
+            float sizeDifference = m_CurrentSize - otherBeetle.m_CurrentSize;
+            float bonusForce = m_BounceForce * sizeDifference;
+            bounceForce += collisionNormal * bonusForce;
+            
+            // Apply the forces
+            m_Rigidbody.AddForce(bounceForce, ForceMode2D.Impulse);
+            otherBeetle.m_Rigidbody.AddForce(-bounceForce, ForceMode2D.Impulse);
+            
+            Debug.Log($"Applied bounce force: {bounceForce.magnitude}");
         }
     }
 
@@ -238,6 +258,65 @@ public class BeetleBubble : MonoBehaviour
         {
             m_BubbleTransform.localScale = Vector3.one * m_CurrentSize;
         }
+    }
+
+    public void ResetState()
+    {
+        // Re-enable visuals and physics
+        foreach (Transform child in transform)
+        {
+            child.gameObject.SetActive(true);
+        }
+        
+        if (m_Rigidbody != null)
+        {
+            m_Rigidbody.simulated = true;
+            m_Rigidbody.linearVelocity = Vector2.zero;
+            m_Rigidbody.angularVelocity = 0f;
+        }
+        
+        // Reset size and visuals
+        m_CurrentSize = 1f;
+        m_CurrentCharge = 0f;
+        UpdateSize(m_CurrentSize);
+        UpdateVisuals(1f);
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("DeathZone"))
+        {
+            GameManager.Instance.RespawnPlayer(GetComponent<PlayerInput>());
+        }
+    }
+
+    public void OnHitSpike()
+    {
+        if (IsShielded || m_IsDead) return;
+        m_IsDead = true;
+
+        // Disable visuals and physics
+        foreach (Transform child in transform)
+        {
+            child.gameObject.SetActive(false);
+        }
+        
+        if (m_Rigidbody != null)
+        {
+            m_Rigidbody.simulated = false;
+        }
+
+        // Start respawn sequence
+        StartCoroutine(RespawnSequence());
+    }
+
+    private System.Collections.IEnumerator RespawnSequence()
+    {
+        yield return new WaitForSeconds(m_RespawnDelay);
+        
+        // Request respawn from GameManager
+        GameManager.Instance.RespawnPlayer(GetComponent<PlayerInput>());
+        m_IsDead = false;
     }
     #endregion
 } 

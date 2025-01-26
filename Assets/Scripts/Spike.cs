@@ -10,14 +10,6 @@ public class Spike : MonoBehaviour
         if (bubble.IsShielded)
             return;
             
-        PopBubble(bubble);
-    }
-    
-    private void PopBubble(BeetleBubble bubble)
-    {
-        // For now, just destroy the bubble
-        Destroy(bubble.gameObject);
-        
-        // TODO: Add pop effect, sound, etc.
+        bubble.OnHitSpike();
     }
 } 
