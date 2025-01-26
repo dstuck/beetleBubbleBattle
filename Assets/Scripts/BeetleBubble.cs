@@ -26,7 +26,9 @@ public class BeetleBubble : MonoBehaviour
 
     [Header("Death Properties")]
     [SerializeField] private float m_RespawnDelay = 1f;
+    [SerializeField] private int m_MaxLives = 3;
     private bool m_IsDead = false;
+    private int m_LivesRemaining;
 
     #endregion
 
@@ -77,6 +79,7 @@ public class BeetleBubble : MonoBehaviour
         m_Rigidbody.linearDamping = m_BaseDamping;
         m_Rigidbody.gravityScale = 0f;
         m_StartPosition = transform.position;
+        m_LivesRemaining = m_MaxLives;
 
         // Configure physics for bouncing
         if (m_Rigidbody != null)
@@ -294,6 +297,7 @@ public class BeetleBubble : MonoBehaviour
     {
         if (IsShielded || m_IsDead) return;
         m_IsDead = true;
+        m_LivesRemaining--;
 
         // Disable visuals and physics
         foreach (Transform child in transform)
@@ -304,6 +308,13 @@ public class BeetleBubble : MonoBehaviour
         if (m_Rigidbody != null)
         {
             m_Rigidbody.simulated = false;
+        }
+
+        if (m_LivesRemaining <= 0)
+        {
+            GameManager.Instance.OnPlayerEliminated(GetComponent<PlayerInput>());
+            // Don't start respawn sequence if eliminated
+            return;
         }
 
         // Start respawn sequence

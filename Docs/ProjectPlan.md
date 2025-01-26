@@ -29,7 +29,7 @@ v0.7 Game management
 - [ ] Possibly add lives
 - [ ] Respawn with short shield
 v0.8 menu
-- [ ] Add player select scene. Set number players and let people hit button to join
+- [x] Add player select scene. Set number players and let people hit button to join
 v1.1 Character select
 - [ ] Rhino beetle - high weight
 - [ ] Ant - high bop
