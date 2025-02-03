@@ -12,6 +12,7 @@ public class PowerChargeEffect : ItemEffect
     private float m_OriginalChargeRate;
     private float m_OriginalGrowthRate;
     private ParticleSystem m_PowerParticles;
+    private static readonly string c_ParticlePrefabPath = "Prefabs/PowerParticles";
     #endregion
 
     protected override void OnEffectStart()
@@ -30,20 +31,18 @@ public class PowerChargeEffect : ItemEffect
         m_TargetBeetle.ChargeRate *= c_ChargeMultiplier;
         m_TargetBeetle.ChargeGrowthRate *= c_ChargeMultiplier;
         
-        // Create particle system
-        var particleObj = new GameObject("PowerParticles");
-        particleObj.transform.SetParent(m_TargetBeetle.transform, false);
-        particleObj.transform.localPosition = Vector3.zero;
-        
-        m_PowerParticles = particleObj.AddComponent<ParticleSystem>();
-        var particleRenderer = m_PowerParticles.GetComponent<ParticleSystemRenderer>();
-        
-        // Use default particle material
-        particleRenderer.material = new Material(Shader.Find("Particles/Standard Unlit"));
-        particleRenderer.sortingOrder = 2;
-        
-        ConfigureParticleSystem();
-        m_PowerParticles.Play();
+        // Load and instantiate particle system
+        var particlePrefab = Resources.Load<ParticleSystem>(c_ParticlePrefabPath);
+        if (particlePrefab != null)
+        {
+            m_PowerParticles = Instantiate(particlePrefab, m_TargetBeetle.transform);
+            m_PowerParticles.transform.localPosition = Vector3.zero;
+            m_PowerParticles.Play();
+        }
+        else
+        {
+            Debug.LogError($"PowerChargeEffect: Could not load particle prefab from {c_ParticlePrefabPath}");
+        }
     }
 
     private void ConfigureParticleSystem()
