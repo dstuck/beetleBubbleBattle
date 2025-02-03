@@ -74,10 +74,6 @@ public class BeetleBubble : MonoBehaviour
     private void Awake()
     {
         var playerInput = GetComponent<PlayerInput>();
-        Debug.Log($"BeetleBubble: Awake for Player {playerInput?.playerIndex ?? -1}. " +
-                  $"BeetleRenderer null? {m_BeetleRenderer == null}, " +
-                  $"Current sprite null? {m_BeetleRenderer?.sprite == null}, " +
-                  $"Sprite name: {m_BeetleRenderer?.sprite?.name ?? "none"}");
         
         m_Rigidbody = GetComponent<Rigidbody2D>();
         
@@ -104,10 +100,6 @@ public class BeetleBubble : MonoBehaviour
     private void Start()
     {
         var playerInput = GetComponent<PlayerInput>();
-        Debug.Log($"BeetleBubble: Start for Player {playerInput?.playerIndex ?? -1}. " +
-                  $"BeetleRenderer null? {m_BeetleRenderer == null}, " +
-                  $"Current sprite null? {m_BeetleRenderer?.sprite == null}, " +
-                  $"Sprite name: {m_BeetleRenderer?.sprite?.name ?? "none"}");
     }
 
     private void Update()
@@ -251,7 +243,6 @@ public class BeetleBubble : MonoBehaviour
         var otherBeetle = collision.gameObject.GetComponentInParent<BeetleBubble>();
         if (otherBeetle != null)
         {
-            Debug.Log($"Beetle collision! Self size: {m_CurrentSize}, Other size: {otherBeetle.m_CurrentSize}");
             
             // Calculate relative velocity
             Vector2 relativeVelocity = m_Rigidbody.linearVelocity - otherBeetle.m_Rigidbody.linearVelocity;
@@ -268,9 +259,7 @@ public class BeetleBubble : MonoBehaviour
             
             // Apply the forces
             m_Rigidbody.AddForce(bounceForce, ForceMode2D.Impulse);
-            otherBeetle.m_Rigidbody.AddForce(-bounceForce, ForceMode2D.Impulse);
-            
-            Debug.Log($"Applied bounce force: {bounceForce.magnitude}");
+            otherBeetle.m_Rigidbody.AddForce(-bounceForce, ForceMode2D.Impulse);            
         }
 
         // Check if we hit a spike
@@ -298,9 +287,6 @@ public class BeetleBubble : MonoBehaviour
         if (m_BeetleRenderer != null)
         {
             currentSprite = m_BeetleRenderer.sprite;
-            Debug.Log($"BeetleBubble: ResetState - Player {playerInput?.playerIndex ?? -1} - " +
-                      $"Stored current sprite. Sprite null? {currentSprite == null}, " +
-                      $"Sprite name: {currentSprite?.name ?? "none"}");
         }
 
         // Re-enable visuals and physics
@@ -312,7 +298,6 @@ public class BeetleBubble : MonoBehaviour
         // Restore the beetle sprite
         if (m_BeetleRenderer != null && currentSprite != null)
         {
-            Debug.Log($"BeetleBubble: ResetState - Restoring sprite");
             m_BeetleRenderer.sprite = currentSprite;
         }
         else

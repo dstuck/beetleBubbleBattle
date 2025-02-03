@@ -166,18 +166,12 @@ public class StartScreenManager : MonoBehaviour
             return;
         }
         
-        Debug.Log($"Charge input received from player {playerInput.playerIndex}: {context.phase}. " +
-                 $"Registered players: {m_RegisteredPlayers.Count}, " +
-                 $"Current charging states: {string.Join(", ", m_PlayerChargingStates.Select(kvp => $"P{kvp.Key.playerIndex}:{kvp.Value}"))}");
-        
         if (context.performed && m_PlayerCount >= 2 && !m_GameStarting)
         {
-            Debug.Log($"Player {playerInput.playerIndex} started charging");
             m_PlayerChargingStates[playerInput] = true;
         }
         else if (context.canceled)
         {
-            Debug.Log($"Player {playerInput.playerIndex} canceled charging");
             m_PlayerChargingStates[playerInput] = false;
             m_CurrentChargeTime = 0f;
         }

@@ -24,6 +24,7 @@ public class GameManager : MonoBehaviour
     private Dictionary<PlayerInput, Vector3> m_PlayerSpawnPoints = new Dictionary<PlayerInput, Vector3>();
     private HashSet<PlayerInput> m_EliminatedPlayers = new HashSet<PlayerInput>();
     private PlayerInputManager m_PlayerInputManager;
+    private PlayerInput m_WinningPlayer;
     #endregion
 
     #region Events
@@ -38,7 +39,6 @@ public class GameManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
-            Debug.Log($"GameManager initialized. Registered players: {m_RegisteredPlayers?.Count ?? 0}");
             
             // Configure PlayerInputManager
             m_PlayerInputManager = GetComponent<PlayerInputManager>();
@@ -86,8 +86,6 @@ public class GameManager : MonoBehaviour
                 child.gameObject.SetActive(false);
             }
             
-            Debug.Log($"Player {playerInput.playerIndex} joined with control scheme: {playerInput.currentControlScheme} (using device: {playerInput.devices.FirstOrDefault()?.name ?? "none"})");
-            
             OnPlayerJoinedEvent?.Invoke(playerInput);
         }
     }
@@ -95,7 +93,6 @@ public class GameManager : MonoBehaviour
     public void OnPlayerLeft(PlayerInput playerInput)
     {
         m_RegisteredPlayers.Remove(playerInput);
-        Debug.Log($"Player {playerInput.playerIndex} left with control scheme: {playerInput.currentControlScheme}");
         OnPlayerLeftEvent?.Invoke(playerInput);
     }
 
@@ -164,6 +161,8 @@ public class GameManager : MonoBehaviour
         
         if (remainingPlayers <= 1)
         {
+            // Find the last remaining player
+            m_WinningPlayer = m_RegisteredPlayers.Find(p => !m_EliminatedPlayers.Contains(p));
             StartCoroutine(LoadWinScene());
         }
     }
@@ -171,6 +170,9 @@ public class GameManager : MonoBehaviour
     private System.Collections.IEnumerator LoadWinScene()
     {
         yield return new WaitForSeconds(1f);
+        
+        // Store the winning player index before destroying players
+        int winningPlayerIndex = m_WinningPlayer != null ? m_WinningPlayer.playerIndex : 0;
         
         // Destroy all player objects
         foreach (var player in m_RegisteredPlayers)
@@ -181,7 +183,16 @@ public class GameManager : MonoBehaviour
             }
         }
         
+        // Set the winning player index in PlayerPrefs or similar
+        PlayerPrefs.SetInt("WinningPlayerIndex", winningPlayerIndex);
+        PlayerPrefs.Save();
+                
         SceneManager.LoadScene("WinScene");
+    }
+
+    public int GetWinningPlayerIndex()
+    {
+        return PlayerPrefs.GetInt("WinningPlayerIndex", 0);
     }
 
     public bool IsPlayerEliminated(PlayerInput playerInput)
@@ -222,12 +233,10 @@ public class GameManager : MonoBehaviour
 
     private System.Collections.IEnumerator EnablePlayerControlsRoutine(PlayerInput playerInput, float delay)
     {
-        Debug.Log($"Enabling player controls for player {playerInput.playerIndex} with delay {delay}");
         yield return new WaitForSeconds(delay);
         
         // Enable the Player action map
         playerInput.actions.FindActionMap("Player").Enable();
-        Debug.Log($"Player controls enabled for player {playerInput.playerIndex}");
     }
     #endregion
 } 

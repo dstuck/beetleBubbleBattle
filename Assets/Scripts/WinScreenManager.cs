@@ -13,13 +13,19 @@ public class WinScreenManager : MonoBehaviour
     {
         if (GameManager.Instance != null)
         {
-            var players = GameManager.Instance.GetRegisteredPlayers();
-            var winner = players.FirstOrDefault(p => !GameManager.Instance.IsPlayerEliminated(p));
-                
-            if (winner != null)
+            int winningPlayerIndex = GameManager.Instance.GetWinningPlayerIndex();
+            if (m_WinnerText != null)
             {
-                m_WinnerText.text = $"Player {winner.playerIndex + 1} Wins!";
+                m_WinnerText.text = $"Player {winningPlayerIndex + 1} Wins!";
             }
+            else
+            {
+                Debug.LogError("WinnerText reference is missing!");
+            }
+        }
+        else
+        {
+            Debug.LogError("GameManager instance is null!");
         }
 
         StartCoroutine(RestartGameSequence());

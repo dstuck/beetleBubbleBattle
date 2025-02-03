@@ -20,7 +20,6 @@ public class LevelManager : MonoBehaviour
     private void SpawnPlayers()
     {
         PlayerInput[] registeredPlayers = GameManager.Instance.GetRegisteredPlayers();
-        Debug.Log($"SpawnPlayers called. Number of registered players: {registeredPlayers.Length}");
         
         for (int i = 0; i < registeredPlayers.Length; i++)
         {
@@ -56,7 +55,6 @@ public class LevelManager : MonoBehaviour
                 // Enable player controls with delay
                 GameManager.Instance.EnablePlayerControls(playerInput);
                 
-                Debug.Log($"Positioned player {i} at spawn point {i}: {spawnPosition}");
             }
             else
             {

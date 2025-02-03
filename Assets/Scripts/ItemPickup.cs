@@ -32,7 +32,6 @@ public class ItemPickup : MonoBehaviour
 
     private void Awake()
     {
-        Debug.Log("ItemPickup: Initialized");
         // Verify collider setup
         if (!GetComponent<Collider2D>())
         {
@@ -58,9 +57,7 @@ public class ItemPickup : MonoBehaviour
         // Get the parent BeetleBubble component
         var player = other.GetComponentInParent<BeetleBubble>();
         if (player != null)
-        {
-            Debug.Log($"Player {player.GetComponent<PlayerInput>()?.playerIndex ?? -1} picked up {m_ItemType}");
-            
+        {            
             ItemEffect effect = m_ItemType == ItemType.Shield ?
                 player.gameObject.AddComponent<ShieldEffect>() :
                 player.gameObject.AddComponent<PowerChargeEffect>();
